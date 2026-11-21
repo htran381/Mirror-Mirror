@@ -50,6 +50,13 @@
   gap: 10px;
 }
 
+/* Landscape: shorter history so the chat stays below the To-Do list */
+@media (orientation: landscape) {
+  .chat-wrapper.compact {
+    --chat-max-height: 260px;
+  }
+}
+
 .chat-wrapper.compact .chat-scroll {
   padding-top: 24px;
   mask-image: linear-gradient(to bottom, transparent 0, #000 32px);

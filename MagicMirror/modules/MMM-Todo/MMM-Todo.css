@@ -1,0 +1,204 @@
+/* MMM-Todo
+ * Matches MMM-Chat: same blue accent, sized to read on a mirror.
+ */
+.todo {
+  --todo-accent: #9cc3ff;
+  --todo-accent-fill: rgb(64 140 255 / 35%);
+  --todo-urgent-important: #ff6b6b;
+  --todo-urgent: #ffb347;
+  --todo-title-size: 22px;
+  --todo-meta-size: 15px;
+  --todo-check-size: 40px;
+  --todo-width: 380px; /* portrait: stays clear of the clock */
+
+  width: var(--todo-width);
+  max-width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.todo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Small colored label above each priority group */
+.todo-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-dimmed, #666);
+}
+
+.todo-section-label::before {
+  content: "";
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.todo-section.urgent_important .todo-section-label {
+  color: var(--todo-urgent-important);
+}
+
+.todo-section.urgent .todo-section-label {
+  color: var(--todo-urgent);
+}
+
+.todo-task {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 0;
+  transition: opacity 0.3s;
+}
+
+/* Round checkbox: large enough to tap on the IR frame */
+.todo-check {
+  flex: none;
+  width: var(--todo-check-size);
+  height: var(--todo-check-size);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid rgb(64 140 255 / 60%);
+  border-radius: 50%;
+  background: transparent;
+  color: transparent;
+  cursor: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.todo-check svg {
+  width: 60%;
+  height: 60%;
+}
+
+.todo-check:active {
+  background: var(--todo-accent-fill);
+}
+
+.todo-task.done .todo-check {
+  background: var(--todo-accent-fill);
+  border-color: var(--todo-accent);
+  color: #fff;
+}
+
+/* MM-owned tasks: MM completes these itself, so no checkbox */
+.todo-mm-badge {
+  flex: none;
+  width: var(--todo-check-size);
+  height: var(--todo-check-size);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--todo-accent-fill);
+  color: var(--todo-accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.todo-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-title {
+  font-family: var(--font-secondary, "Roboto"), sans-serif;
+  font-size: var(--todo-title-size);
+  line-height: 1.3;
+  color: var(--color-text-bright, #fff);
+  overflow-wrap: anywhere;
+}
+
+.todo-task.mm-owned .todo-title {
+  color: var(--todo-accent);
+}
+
+.todo-task.done .todo-title {
+  color: var(--color-text-dimmed, #666);
+  text-decoration: line-through;
+}
+
+.todo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 2px;
+  font-size: var(--todo-meta-size);
+  color: var(--color-text-dimmed, #666);
+}
+
+.todo-due.soon {
+  color: var(--todo-urgent);
+}
+
+.todo-due.overdue {
+  color: var(--todo-urgent-important);
+}
+
+.todo-choice {
+  color: var(--todo-accent);
+}
+
+.todo-undo {
+  flex: none;
+  padding: 8px 16px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text, #999);
+  font-size: 15px;
+  cursor: none;
+}
+
+.todo-more,
+.todo-empty {
+  font-size: 16px;
+  color: var(--color-text-dimmed, #666);
+}
+
+.todo-empty:not(.dimmed) {
+  color: var(--todo-accent);
+}
+
+/* Landscape: wider but shorter rows, so the list fits above the chat */
+@media (orientation: landscape) {
+  .todo {
+    --todo-width: 480px;
+    --todo-title-size: 19px;
+    --todo-meta-size: 13px;
+    --todo-check-size: 32px;
+
+    gap: 8px;
+  }
+
+  .todo-section {
+    gap: 2px;
+  }
+
+  .todo-task {
+    gap: 12px;
+    padding: 3px 0;
+  }
+}
+
+/* Keep the header line the same width as the list */
+.module.MMM-Todo {
+  max-width: 380px;
+  text-align: left;
+}
+
+@media (orientation: landscape) {
+  .module.MMM-Todo {
+    max-width: 480px;
+  }
+}

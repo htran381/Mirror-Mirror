@@ -109,6 +109,11 @@ let config = {
 			},
 		},
 		{
+			module: "MMM-Todo",
+			position: "top_left",
+			header: "To-Do"
+		},
+		{
 			module: "MMM-Chat",
 			position: "bottom_left",
 			header: "Mirror Chat",

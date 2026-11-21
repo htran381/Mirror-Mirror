@@ -333,3 +333,67 @@ test('TC15: mic state is sent to the mirror only when it changes', async () => {
     ['MIC_STATE', 'listening']
   ]);
 });
+
+// Load db/queries/tasks.js against a fresh in-memory database (never touches mirror.db)
+function loadTaskQueries() {
+  const fs = require('node:fs');
+  const Database = require(path.resolve(__dirname, '../MagicMirror/node_modules/better-sqlite3'));
+  const dbDir = path.resolve(__dirname, '../MagicMirror/db');
+
+  const memoryDb = new Database(':memory:');
+  memoryDb.pragma('foreign_keys = ON');
+  memoryDb.exec(fs.readFileSync(path.join(dbDir, 'schema.sql'), 'utf8'));
+  memoryDb.exec(fs.readFileSync(path.join(dbDir, 'seed.sql'), 'utf8'));
+
+  const filename = require.resolve(path.join(dbDir, 'queries/tasks.js'));
+  const originalLoad = Module._load;
+
+  try {
+    Module._load = function (request, parent, isMain) {
+      if (parent && parent.filename === filename && request === '../index.js') {
+        return memoryDb;
+      }
+      return originalLoad.apply(this, arguments);
+    };
+    delete require.cache[filename];
+    return { tasks: require(filename), db: memoryDb };
+  } finally {
+    Module._load = originalLoad;
+    delete require.cache[filename];
+  }
+}
+
+// Test To-Do module queries
+test('TC16: To-Do list is priority-first and includes the linked choice', () => {
+  const { tasks, db } = loadTaskQueries();
+  const userId = db.prepare('SELECT user_id FROM users LIMIT 1').get().user_id;
+
+  db.prepare(`INSERT INTO choices (bin_id, description, status, source) VALUES (7, 'Summer internship', 'active', 'stated')`).run();
+  const choiceId = db.prepare('SELECT last_insert_rowid() AS id').get().id;
+
+  tasks.addTask(userId, null, { title: 'Call the dentist' });
+  tasks.addTask(userId, null, { title: 'Accept offer', priority: 'urgent', choiceId, position: 1 });
+  tasks.addTask(userId, null, { title: 'Finish lab report', priority: 'urgent_important' });
+
+  const list = tasks.getTodoListWithLinks(userId);
+
+  assert.deepEqual(list.map(t => t.title), ['Finish lab report', 'Accept offer', 'Call the dentist']);
+  assert.equal(list[1].choice_name, 'Summer internship');
+  assert.equal(list[0].choice_name, null);
+});
+
+test('TC17: a completed task leaves the list and Undo puts it back', () => {
+  const { tasks, db } = loadTaskQueries();
+  const userId = db.prepare('SELECT user_id FROM users LIMIT 1').get().user_id;
+
+  const taskId = tasks.addTask(userId, null, { title: 'Call the dentist' });
+
+  assert.equal(tasks.completeTask(taskId, null), 1);
+  assert.equal(tasks.getTodoListWithLinks(userId).length, 0);
+
+  assert.equal(tasks.reopenTask(taskId), 1);
+  assert.deepEqual(tasks.getTodoListWithLinks(userId).map(t => t.title), ['Call the dentist']);
+
+  // Reopening an already-open task changes nothing
+  assert.equal(tasks.reopenTask(taskId), 0);
+});

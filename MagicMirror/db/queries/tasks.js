@@ -77,4 +77,42 @@ function cancelTask(taskId) {
 
 
 
-module.exports = { addTask, getTodoList, completeTask, cancelTask, };
+// Puts a done or cancelled task back on the list (used by Undo on the mirror). Returns 1 if updated, 0 if not.
+function reopenTask(taskId) {
+    const changes = db.prepare(
+        `
+        UPDATE tasks SET status = 'open', completed_session_id = NULL, updated_at = datetime('now','localtime')
+        WHERE task_id = ? AND status IN ('done', 'cancelled')
+        `
+
+    ).run(taskId);
+    return changes.changes;
+}
+
+// Same order as getTodoList, plus the linked choice and option (if any) for display on the mirror.
+function getTodoListWithLinks(userId) {
+    return db.prepare(
+        `
+        SELECT tasks.task_id, tasks.title, tasks.kind, tasks.priority, tasks.position,
+               tasks.owner, tasks.due_at, tasks.status,
+               tasks.choice_id, choices.description AS choice_name, choices.status AS choice_status,
+               tasks.option_id, options.description AS option_name
+        FROM tasks
+        LEFT JOIN choices ON choices.choice_id = tasks.choice_id
+        LEFT JOIN options ON options.option_id = tasks.option_id
+        WHERE tasks.user_id = ? AND tasks.status = 'open'
+        ORDER BY
+            CASE tasks.priority
+                WHEN 'urgent_important' THEN 0
+                WHEN 'urgent' THEN 1
+                ELSE 2
+            END,
+        tasks.position IS NULL,
+        tasks.position,
+        tasks.created_at,
+        tasks.task_id
+        `
+    ).all(userId);
+}
+
+module.exports = { addTask, getTodoList, completeTask, cancelTask, reopenTask, getTodoListWithLinks, };
