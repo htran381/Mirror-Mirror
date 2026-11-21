@@ -3,16 +3,87 @@
  * Tweak the variables below to adjust size and layout.
  */
 .chat-wrapper {
+  /* Portrait (default): tall, narrow screen */
   --chat-width: 900px;
-  --chat-max-height: 55vh;
+  --chat-max-height: 48vh;
   --chat-text-size: 28px;
   --chat-role-size: 17px;
+  --chat-button-size: 84px;
+  --chat-icon-size: 40px;
 
   width: min(var(--chat-width), 100%);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* Landscape: short, wide screen. Shorter chat and slightly smaller text so it
+ * stays clear of the clock, and wider bubbles to use the extra width. */
+@media (orientation: landscape) {
+  .chat-wrapper {
+    --chat-width: 1100px;
+    --chat-max-height: 36vh;
+    --chat-text-size: 24px;
+    --chat-role-size: 15px;
+    --chat-button-size: 72px;
+    --chat-icon-size: 34px;
+  }
+}
+
+/* Compact layout: a small panel like the other modules.
+ * Comes after the landscape block so it wins in both orientations. */
+.chat-wrapper.compact {
+  --chat-width: 460px;
+  --chat-max-height: 380px;
+  --chat-text-size: 20px;
+  --chat-role-size: 12px;
+  --chat-button-size: 56px;
+  --chat-icon-size: 26px;
+
+  margin: 0;
+  gap: 10px;
+}
+
+.chat-wrapper.compact .chat-scroll {
+  padding-top: 24px;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 32px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 32px);
+}
+
+.chat-wrapper.compact .chat-messages {
+  gap: 12px;
+}
+
+.chat-wrapper.compact .chat-message {
+  max-width: 92%;
+  padding: 9px 14px;
+  border-radius: 14px;
+}
+
+.chat-wrapper.compact .chat-role {
+  margin-bottom: 3px;
+}
+
+.chat-wrapper.compact .chat-controls-right {
+  gap: 10px;
+}
+
+.chat-wrapper.compact .chat-status {
+  font-size: 16px;
+}
+
+.chat-wrapper.compact .chat-badge {
+  min-width: 26px;
+  height: 26px;
+  line-height: 26px;
+  font-size: 15px;
+  top: -6px;
+  right: -6px;
+}
+
+.chat-wrapper.compact.minimized {
+  width: min(340px, 100%);
 }
 
 /* Scrollable history.
@@ -116,8 +187,8 @@
 /* Buttons: large enough to hit on an IR touch frame */
 .chat-button {
   position: relative;
-  width: 84px;
-  height: 84px;
+  width: var(--chat-button-size);
+  height: var(--chat-button-size);
   flex: none;
   display: grid;
   place-items: center;
@@ -131,8 +202,8 @@
 }
 
 .chat-button svg {
-  width: 40px;
-  height: 40px;
+  width: var(--chat-icon-size);
+  height: var(--chat-icon-size);
 }
 
 .chat-button:active {

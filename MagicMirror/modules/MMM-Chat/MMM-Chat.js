@@ -1,5 +1,16 @@
 Module.register("MMM-Chat", {
 
+  defaults: {
+    // "compact": small panel sized like other modules (put it in a corner region)
+    // "full": wide chat across the bottom_bar
+    layout: "compact",
+
+    // Modules that would overlap the open chat. They hide while the chat is
+    // showing messages and come back when it is minimized or cleared.
+    // Set to [] in config.js to turn this off.
+    hideWhileOpen: ["MMM-Jast", "newsfeed"]
+  },
+
   // Runs when the module starts
   start: function () {
 
@@ -15,6 +26,7 @@ Module.register("MMM-Chat", {
     this.minimized = false;
     this.muted = false;
     this.unread = 0; // replies that arrived while minimized
+    this.companionsHidden = false;
 
     // Tell the backend (NodeHelper) to start listening
     this.sendSocketNotification("START");
@@ -46,7 +58,9 @@ Module.register("MMM-Chat", {
       console.log("Checking:", module.name);
 
       if (names.includes(module.name)) {
-        module.show(1000);
+        // Also releases the chat's auto-hide lock, so voice commands like
+        // "show stocks" still work while the chat is open
+        module.show(1000, { lockString: this.identifier });
       }
 
     });
@@ -79,7 +93,7 @@ Module.register("MMM-Chat", {
     // Backend confirms the microphone state
     if (notification === "MUTE_STATE") {
       this.muted = Boolean(payload);
-      this.updateDom(0);
+      this.refresh();
     }
 
     // Add user message when speech/text is received
@@ -89,7 +103,7 @@ Module.register("MMM-Chat", {
 
       this.status = "Thinking...";
 
-      this.updateDom(0);
+      this.refresh();
 
     }
 
@@ -104,7 +118,7 @@ Module.register("MMM-Chat", {
 
       this.status = "Listening...";
 
-      this.updateDom(0);
+      this.refresh();
 
     }
 
@@ -187,13 +201,47 @@ Module.register("MMM-Chat", {
 
   },
 
+  // Hide modules that overlap the chat while it is open, show them otherwise
+  updateCompanionModules: function () {
+
+    const shouldHide = !this.minimized && this.messages.length > 0;
+
+    if (shouldHide === this.companionsHidden) {
+      return;
+    }
+
+    this.companionsHidden = shouldHide;
+    const names = this.config.hideWhileOpen || [];
+
+    MM.getModules().enumerate(module => {
+      if (!names.includes(module.name)) {
+        return;
+      }
+
+      // lockString keeps them hidden until the chat releases them
+      if (shouldHide) {
+        module.hide(500, { lockString: this.identifier });
+      }
+      else {
+        module.show(500, { lockString: this.identifier });
+      }
+    });
+
+  },
+
+  // Re-render and keep the other modules in sync with the chat state
+  refresh: function () {
+    this.updateDom(0);
+    this.updateCompanionModules();
+  },
+
   // Button handlers
   toggleMinimized: function () {
     this.minimized = !this.minimized;
     if (!this.minimized) {
       this.unread = 0;
     }
-    this.updateDom(0);
+    this.refresh();
   },
 
   toggleMuted: function () {
@@ -201,13 +249,13 @@ Module.register("MMM-Chat", {
     // then the backend confirms with MUTE_STATE
     this.muted = !this.muted;
     this.sendSocketNotification("SET_MUTE", this.muted);
-    this.updateDom(0);
+    this.refresh();
   },
 
   clearChat: function () {
     this.messages = [];
     this.unread = 0;
-    this.updateDom(0);
+    this.refresh();
   },
 
   // Inline SVG icons (no icon font needed)
@@ -237,7 +285,9 @@ Module.register("MMM-Chat", {
   getDom: function () {
 
     const wrapper = document.createElement("div");
-    wrapper.className = "chat-wrapper" + (this.minimized ? " minimized" : "");
+    wrapper.className = "chat-wrapper" +
+      (this.config.layout === "compact" ? " compact" : "") +
+      (this.minimized ? " minimized" : "");
 
     // Message history (hidden while minimized)
     if (!this.minimized) {

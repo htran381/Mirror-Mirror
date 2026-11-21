@@ -110,7 +110,12 @@ let config = {
 		},
 		{
 			module: "MMM-Chat",
-			position: "bottom_bar"
+			position: "bottom_left",
+			header: "Mirror Chat",
+			config: {
+				layout: "compact", // or "full" with position "bottom_bar"
+				hideWhileOpen: ["MMM-Jast"]
+			}
 		},
 		{
 			module: "MMM-Remote-Control",
