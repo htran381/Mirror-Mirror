@@ -74,30 +74,22 @@ Module.register("MMM-Chat", {
     // Add user message when speech/text is received
     if (notification === "TEXT") {
 
-      this.messages.push({
-        role: "user",
-        content: payload
-      });
+      this.addMessage("user", payload);
 
       this.status = "Thinking...";
 
-      // Check whether new content will fit before updating
-      this.checkOverflowBeforeUpdate();
+      this.updateDom(0);
 
     }
 
     // Add assistant response
     if (notification === "AI_RESPONSE") {
 
-      this.messages.push({
-        role: "assistant",
-        content: payload
-      });
+      this.addMessage("assistant", payload);
 
       this.status = "Listening...";
 
-      // Check whether new content will fit before updating
-      this.checkOverflowBeforeUpdate();
+      this.updateDom(0);
 
     }
 
@@ -165,45 +157,18 @@ Module.register("MMM-Chat", {
 
   },
 
-  // Checks whether the chat would overflow before showing it
-  checkOverflowBeforeUpdate: function () {
+  // Adds a message to the history.
+  // The chat area scrolls, so old messages are kept instead of being
+  // deleted when the screen fills up. Only the oldest are dropped past the cap.
+  maxMessages: 40,
 
-    // Create a hidden copy of the chat
-    const testWrapper = this.getDom();
+  addMessage: function (role, content) {
 
-    testWrapper.style.position = "absolute";
-    testWrapper.style.visibility = "hidden";
-    testWrapper.style.pointerEvents = "none";
-    testWrapper.style.left = "-9999px";
-    testWrapper.style.top = "0";
+    this.messages.push({ role, content });
 
-    // Add hidden copy to page so browser can measure it
-    document.body.appendChild(testWrapper);
-
-    // Get height and position of hidden chat
-    const bounds = testWrapper.getBoundingClientRect();
-
-    // Check whether it would extend past bottom of screen
-    const overflows = testWrapper.scrollHeight > testWrapper.clientHeight;
-
-    // Remove hidden copy
-    document.body.removeChild(testWrapper);
-
-    // Remove older exchanges and keep the newest reply available to scroll.
-    if (overflows && this.messages.length >= 4) {
-
-      console.log("Chat overflowing - removing oldest conversation");
-
-      this.messages.splice(0, 2);
-
-      // Check again in case more than one conversation must be removed
-      this.checkOverflowBeforeUpdate();
-
-      return;
+    if (this.messages.length > this.maxMessages) {
+      this.messages.splice(0, this.messages.length - this.maxMessages);
     }
-
-    // Everything fits, update visible module
-    this.updateDom(0);
 
   },
 
@@ -212,6 +177,10 @@ Module.register("MMM-Chat", {
 
     const wrapper = document.createElement("div");
     wrapper.className = "chat-wrapper";
+
+    // Scrollable area that holds the message history
+    const scrollArea = document.createElement("div");
+    scrollArea.className = "chat-scroll";
 
     const messagesContainer = document.createElement("div");
     messagesContainer.className = "chat-messages";
@@ -251,11 +220,15 @@ Module.register("MMM-Chat", {
 
     });
 
-    wrapper.appendChild(messagesContainer);
+    scrollArea.appendChild(messagesContainer);
+    wrapper.appendChild(scrollArea);
 
-    // Show listening/thinking status
+    // Show listening/thinking status (stays fixed below the scroll area)
     const statusDiv = document.createElement("div");
     statusDiv.className = "chat-status";
+    if (this.status === "Thinking...") {
+      statusDiv.classList.add("thinking");
+    }
     statusDiv.textContent = "🎤 " + this.status;
 
     wrapper.appendChild(statusDiv);
