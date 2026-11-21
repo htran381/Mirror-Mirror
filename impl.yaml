@@ -1,0 +1,31 @@
+project_name: "Mirror Mirror"
+project_type: "hybrid"
+
+impl_claim: "Mirror Mirror is a voice-controlled smart mirror that transcribes spoken commands using Whisper.cpp, routes conversational queries to a local Qwen model or cloud-based Claude model based on complexity and availability, displays user queries and AI responses in a chat interface, and controls the visibility of MagicMirror informational modules through voice commands. A mock mode simulates speech input to demonstrate chat interactions and display controls without requiring a microphone or API credentials."
+
+languages:
+  - "javascript"
+
+hardware_required: true
+
+setup:
+  - "bash mirror.sh install"
+
+build: [] # Empty because it is all handled in the setup command
+
+test:
+  - "node --test tests/tests.js"
+
+run:
+  - "bash mirror.sh start --mock
+
+mock_mode:
+  available: true
+  commands:
+    - "bash mirror.sh start --mock"
+
+demo:
+  video: "https://drive.google.com/file/d/1CIPcHPWDlY7C6_BmYHRwdRRaXWEU6krD/view"
+  screenshots: []
+
+notes: "Mirror Mirror is an Electron-based graphical application. Full functionality requires a graphical environment and microphone hardware. Normal mode supports local Qwen and cloud-based Claude with MCP integration. Mock mode demonstrates predefined commands without microphone input or API credentials. Automated tests use mocked AI services and do not require Whisper.cpp, Ollama, MCP, microphone hardware, or API credentials. See README.md for installation instructions."
