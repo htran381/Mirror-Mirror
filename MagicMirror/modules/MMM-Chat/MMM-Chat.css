@@ -31,61 +31,81 @@
   }
 }
 
-/* Compact layout: chat bubbles in a module-sized panel for a corner region.
+/* Compact layout: a small panel like the other modules.
  * Comes after the landscape block so it wins in both orientations. */
 .chat-wrapper.compact {
-  --chat-width: 760px;
-  --chat-max-height: 640px;
-  --chat-text-size: 32px;
-  --chat-role-size: 16px;
-  --chat-button-size: 76px;
-  --chat-icon-size: 36px;
+  --chat-width: 460px;
+  --chat-max-height: 380px;
+  --chat-text-size: 20px;
+  --chat-role-size: 12px;
+  --chat-button-size: 56px;
+  --chat-icon-size: 26px;
 
   margin: 0;
-  gap: 14px;
+  gap: 10px;
 }
 
-@media (orientation: landscape) {
-  .chat-wrapper.compact {
-    --chat-width: 780px;
-    --chat-max-height: 44vh;
-    --chat-text-size: 29px;
-    --chat-role-size: 15px;
-    --chat-button-size: 68px;
-    --chat-icon-size: 32px;
-  }
+.chat-wrapper.compact .chat-scroll {
+  padding-top: 24px;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 32px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 32px);
 }
 
 .chat-wrapper.compact .chat-messages {
-  gap: 16px;
+  gap: 12px;
 }
 
 .chat-wrapper.compact .chat-message {
-  max-width: 88%;
-  padding: 12px 20px;
+  max-width: 92%;
+  padding: 9px 14px;
+  border-radius: 14px;
 }
 
-.chat-wrapper.compact .chat-controls {
-  justify-content: flex-start;
-  gap: 14px;
+.chat-wrapper.compact .chat-role {
+  margin-bottom: 3px;
 }
 
 .chat-wrapper.compact .chat-controls-right {
-  gap: 14px;
+  gap: 10px;
 }
 
 .chat-wrapper.compact .chat-status {
-  flex: none;
-  min-width: 170px;
-  font-size: 22px;
+  font-size: 16px;
+}
+
+.chat-wrapper.compact .chat-badge {
+  min-width: 26px;
+  height: 26px;
+  line-height: 26px;
+  font-size: 15px;
+  top: -6px;
+  right: -6px;
 }
 
 .chat-wrapper.compact.minimized {
-  width: auto;
+  --chat-button-size: 76px;
+  --chat-icon-size: 36px;
+
+  width: min(460px, 100%);
 }
 
 .chat-wrapper.compact.minimized .chat-controls {
-  padding: 6px;
+  padding: 8px;
+}
+
+.chat-wrapper.compact.minimized .chat-controls-right {
+  gap: 14px;
+}
+
+.chat-wrapper.compact.minimized .chat-status {
+  font-size: 22px;
+}
+
+.chat-wrapper.compact.minimized .chat-badge {
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+  font-size: 18px;
 }
 
 /* Scrollable history.
@@ -258,11 +278,5 @@
 
 /* Keep the module header ("Mirror Chat") the same width as the chat */
 .module.MMM-Chat:has(.chat-wrapper.compact) {
-  max-width: 760px;
-}
-
-@media (orientation: landscape) {
-  .module.MMM-Chat:has(.chat-wrapper.compact) {
-    max-width: 780px;
-  }
+  max-width: 460px;
 }
