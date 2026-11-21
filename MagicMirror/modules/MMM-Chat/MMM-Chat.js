@@ -8,7 +8,12 @@ Module.register("MMM-Chat", {
     // Modules that would overlap the open chat. They hide while the chat is
     // showing messages and come back when it is minimized or cleared.
     // Set to [] in config.js to turn this off.
-    hideWhileOpen: ["MMM-Jast", "newsfeed"]
+    hideWhileOpen: ["MMM-Jast", "newsfeed"],
+
+    // Minimize the chat after this many seconds with no conversation or touch.
+    // It opens again by itself the next time you talk to the mirror.
+    // Set to 0 to turn this off.
+    idleMinimizeSeconds: 60
   },
 
   // Runs when the module starts
@@ -20,13 +25,16 @@ Module.register("MMM-Chat", {
     this.messages = [];
 
     // Current system status
-    this.status = "Listening...";
+    this.micState = "listening"; // "listening" or "processing", from the backend
+    this.thinking = false;       // waiting for the AI's reply
 
     // UI state for the control buttons
     this.minimized = false;
     this.muted = false;
     this.unread = 0; // replies that arrived while minimized
     this.companionsHidden = false;
+    this.autoMinimized = false;  // minimized by the idle timer, not by a tap
+    this.idleTimer = null;
 
     // Tell the backend (NodeHelper) to start listening
     this.sendSocketNotification("START");
@@ -90,6 +98,12 @@ Module.register("MMM-Chat", {
 
     console.log("SOCKET RECEIVED:", notification, payload);
 
+    // Backend reports whether it is waiting for speech or transcribing
+    if (notification === "MIC_STATE") {
+      this.micState = payload;
+      this.refresh();
+    }
+
     // Backend confirms the microphone state
     if (notification === "MUTE_STATE") {
       this.muted = Boolean(payload);
@@ -101,9 +115,17 @@ Module.register("MMM-Chat", {
 
       this.addMessage("user", payload);
 
-      this.status = "Thinking...";
+      this.thinking = true;
+
+      // Re-open the chat if it was tucked away for being idle
+      if (this.minimized && this.autoMinimized) {
+        this.minimized = false;
+        this.autoMinimized = false;
+        this.unread = 0;
+      }
 
       this.refresh();
+      this.resetIdleTimer();
 
     }
 
@@ -116,9 +138,10 @@ Module.register("MMM-Chat", {
         this.unread++;
       }
 
-      this.status = "Listening...";
+      this.thinking = false;
 
       this.refresh();
+      this.resetIdleTimer();
 
     }
 
@@ -235,9 +258,38 @@ Module.register("MMM-Chat", {
     this.updateCompanionModules();
   },
 
+  // (Re)start the countdown to auto-minimize
+  resetIdleTimer: function () {
+
+    clearTimeout(this.idleTimer);
+
+    const seconds = this.config.idleMinimizeSeconds;
+
+    if (!seconds || this.minimized || this.messages.length === 0) {
+      return;
+    }
+
+    this.idleTimer = setTimeout(() => {
+
+      // Don't hide the chat while a reply is on its way
+      if (this.thinking) {
+        this.resetIdleTimer();
+        return;
+      }
+
+      this.minimized = true;
+      this.autoMinimized = true;
+      this.refresh();
+
+    }, seconds * 1000);
+
+  },
+
   // Button handlers
   toggleMinimized: function () {
     this.minimized = !this.minimized;
+    this.autoMinimized = false;
+    this.resetIdleTimer();
     if (!this.minimized) {
       this.unread = 0;
     }
@@ -255,6 +307,7 @@ Module.register("MMM-Chat", {
   clearChat: function () {
     this.messages = [];
     this.unread = 0;
+    clearTimeout(this.idleTimer);
     this.refresh();
   },
 
@@ -326,8 +379,20 @@ Module.register("MMM-Chat", {
 
       });
 
+      // Typing bubble while the mirror works on a reply
+      if (this.thinking) {
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "chat-message assistant-message chat-typing";
+        typingDiv.setAttribute("aria-label", "Mirror is typing");
+        typingDiv.innerHTML = "<span></span><span></span><span></span>";
+        messagesContainer.appendChild(typingDiv);
+      }
+
       scrollArea.appendChild(messagesContainer);
       wrapper.appendChild(scrollArea);
+
+      // Scrolling the history counts as activity
+      scrollArea.addEventListener("scroll", () => this.resetIdleTimer(), { passive: true });
 
     }
 
@@ -349,11 +414,20 @@ Module.register("MMM-Chat", {
       statusDiv.textContent = "Mic muted";
       statusDiv.classList.add("muted");
     }
+    else if (this.thinking) {
+      statusDiv.textContent = "Thinking…";
+      statusDiv.classList.add("thinking");
+    }
+    else if (this.micState === "processing") {
+      statusDiv.textContent = "Processing…";
+      statusDiv.classList.add("processing");
+    }
     else {
-      statusDiv.textContent = this.status;
-      if (this.status === "Thinking...") {
-        statusDiv.classList.add("thinking");
-      }
+      // Animated sound bars show the mirror is listening
+      statusDiv.classList.add("listening");
+      statusDiv.innerHTML =
+        '<span class="chat-wave"><span></span><span></span><span></span><span></span></span>' +
+        "<span>Listening</span>";
     }
 
     controls.appendChild(statusDiv);
@@ -383,6 +457,9 @@ Module.register("MMM-Chat", {
     controls.appendChild(rightButtons);
 
     wrapper.appendChild(controls);
+
+    // Touching the chat counts as activity
+    wrapper.addEventListener("pointerdown", () => this.resetIdleTimer());
 
     return wrapper;
 

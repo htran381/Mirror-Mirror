@@ -25,6 +25,7 @@ module.exports = NodeHelper.create({
     this.micEnabled = false; // true once the real listening loop has been started
     this.listening = false;  // true while the listening loop is running
     this.recorder = null;    // current SoX recording process
+    this.micState = null;    // last state sent to the front end
 
     try {
       await connectMcp();
@@ -137,6 +138,16 @@ module.exports = NodeHelper.create({
     if (!this.listening) {
       listen(this);
     }
+  },
+
+  // Send the mic state ("listening" / "processing") to the front end when it changes
+  reportMicState(state) {
+    if (state === this.micState) {
+      return;
+    }
+
+    this.micState = state;
+    this.sendSocketNotification("MIC_STATE", state);
   },
 
   // Mute or unmute the microphone

@@ -43,6 +43,9 @@ async function listen(helper) {
 
   helper.listening = true;
 
+  // Tell the mirror it is waiting for speech
+  helper.reportMicState("listening");
+
   const audioFile = path.resolve(__dirname, "audio.wav");
 
   try {
@@ -78,6 +81,9 @@ async function listen(helper) {
       console.log("Mic muted - recording discarded");
       return;
     }
+
+    // Audio captured; Whisper is turning it into text
+    helper.reportMicState("processing");
 
     // Path to whisper executable
     const whisperPath = path.resolve(

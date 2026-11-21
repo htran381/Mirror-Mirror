@@ -316,3 +316,20 @@ test('TC14: unmuting before the mic was ever started does not start listening', 
   assert.equal(listenCalls.length, 0);
   assert.deepEqual(notifications, [['MUTE_STATE', true], ['MUTE_STATE', false]]);
 });
+
+// Test listening-state reporting
+test('TC15: mic state is sent to the mirror only when it changes', async () => {
+  const { helper, notifications } = makeMicHelper();
+  helper.micState = null;
+
+  helper.reportMicState('listening');
+  helper.reportMicState('listening');
+  helper.reportMicState('processing');
+  helper.reportMicState('listening');
+
+  assert.deepEqual(notifications, [
+    ['MIC_STATE', 'listening'],
+    ['MIC_STATE', 'processing'],
+    ['MIC_STATE', 'listening']
+  ]);
+});
