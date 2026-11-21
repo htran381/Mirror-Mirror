@@ -86,11 +86,14 @@
   --chat-button-size: 76px;
   --chat-icon-size: 36px;
 
-  width: min(460px, 100%);
+  /* Fixed width so the bar doesn't shrink and crowd its buttons */
+  width: 460px;
+  max-width: 100%;
 }
 
 .chat-wrapper.compact.minimized .chat-controls {
-  padding: 8px;
+  padding: 8px 10px;
+  gap: 20px;
 }
 
 .chat-wrapper.compact.minimized .chat-controls-right {
