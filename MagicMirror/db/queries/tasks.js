@@ -56,7 +56,7 @@ function completeTask(taskId, sessionId) {
     const changes = db.prepare(
         `
         UPDATE tasks SET status = 'done', completed_session_id = ?, updated_at = datetime('now','localtime')
-        WHERE task_id = ?
+        WHERE task_id = ? AND status = 'open'
         `
 
     ).run(sessionId, taskId);
@@ -68,7 +68,7 @@ function cancelTask(taskId) {
     const changes = db.prepare(
         `
         UPDATE tasks SET status = 'cancelled', updated_at = datetime('now','localtime')
-        WHERE task_id = ?
+        WHERE task_id = ? AND status = 'open'
         `
 
     ).run(taskId);

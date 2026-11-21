@@ -143,6 +143,9 @@ Module.register("MMM-Chat", {
       this.refresh();
       this.resetIdleTimer();
 
+      // The reply may have changed tasks (to-do tools): let MMM-Todo reload now
+      this.sendNotification("TASKS_CHANGED");
+
     }
 
     // Handle module actions

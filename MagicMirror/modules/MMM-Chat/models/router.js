@@ -29,6 +29,11 @@ async function route(command, onRouteSelected) {
 
   }
 
+  // To-Do list requests use the to-do tools
+  else if (model === "TODO") {
+    response = await askClaude(prompt, true, "todo");
+  }
+
   // Use read-only tools when the user is asking about a past choice.
   else if (model === "CHOICE" || model === "HISTORY") {
     const toolMode = model === "HISTORY" ? "history" : "choice";
@@ -124,11 +129,15 @@ async function chooseModel(command, conversation) {
     saved choice, option, evaluation, or decision and the user is not asking
     to change a record or work through a decision.
     Route questions about what the user previously picked or decided to HISTORY.
+    Choose TODO when the user wants to add, list, finish, or remove items on
+    their to-do list, such as "add call the dentist to my to-do list" or
+    "what's on my to-do list". A to-do request about a saved choice that does
+    not change the choice itself is still TODO.
     Use the recent conversation to resolve references and short confirmations.
     Classify only the current request. A past choice discussion alone does not
     make a new request a Choice Support request.
 
-    Reply with exactly one label: LOCAL, CLAUDE, MCP, CHOICE, or HISTORY.
+    Reply with exactly one label: LOCAL, CLAUDE, MCP, CHOICE, HISTORY, or TODO.
     Current request:
     ${command}
 
@@ -152,7 +161,7 @@ async function chooseModel(command, conversation) {
 
     console.log("Claude routing response:", selectedModel);
 
-    if (selectedModel === "CHOICE" || selectedModel === "HISTORY") {
+    if (selectedModel === "CHOICE" || selectedModel === "HISTORY" || selectedModel === "TODO") {
       return selectedModel;
     }
 

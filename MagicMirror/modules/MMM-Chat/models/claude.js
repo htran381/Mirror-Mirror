@@ -168,23 +168,59 @@ possibilities. Keep past evaluations tied to the choice they came from.
 ${choiceDisplayInstructions}
 `;
 
+const todoInstructions = `
+You manage the user's to-do list on their smart mirror.
+Add, list, finish, or remove tasks only when the user asks.
+Only the title is required. Keep titles short and in the user's words.
+Set priority only when the user says a task is urgent or important:
+urgent and important is urgent_important, urgent only is urgent.
+Set a due date only if the user gave one.
+If a task is for a saved choice, search saved choices to get its ID and
+link it. Do not create, change, or decide choices here.
+To finish or remove a task, list tasks first if you don't know its ID,
+and ask which one the user means if more than one could match.
+Remove a task only when the user asked to remove it.
+Use the tool before saying a task was added, finished, or removed.
+The to-do list is shown on the mirror, so confirm briefly, for example
+"Added 'call the dentist' to your to-do list." If a tool fails, say so.
+`;
+
+// Which MCP tools each tool mode may use
+const TODO_TOOLS = ["mirror_todo_list", "mirror_todo_add", "mirror_todo_complete", "mirror_todo_remove"];
+
+function toolsForMode(toolMode, tools = claudeTools) {
+  return tools.filter(tool => {
+    if (toolMode === "history") {
+      return tool.name === "mirror_choice_search"
+        || tool.name === "mirror_choice_get"
+        || tool.name === "mirror_choice_list";
+    }
+    if (toolMode === "todo") {
+      // To-do tools, plus read-only choice lookup for linking a task to a choice
+      return TODO_TOOLS.includes(tool.name)
+        || tool.name === "mirror_choice_search"
+        || tool.name === "mirror_choice_get";
+    }
+    if (toolMode === "choice") {
+      return tool.name.startsWith("mirror_choice_");
+    }
+    // Module mode: everything except choice and to-do tools
+    return !tool.name.startsWith("mirror_choice_") && !tool.name.startsWith("mirror_todo_");
+  });
+}
+
 // Send a prompt to the remote Claude model and return its response
 async function askClaude(prompt, useTools = false, toolMode = "module") {
 
   try {
     const instructions = {
       choice: choiceSupportInstructions,
-      history: choiceHistoryInstructions
+      history: choiceHistoryInstructions,
+      // Add today's date so "due Friday" resolves to a real date
+      todo: todoInstructions + `Today is ${new Date().toDateString()}.`
     }[toolMode];
 
-    const tools = useTools ? claudeTools.filter(tool => {
-      if (toolMode === "history") {
-        return tool.name === "mirror_choice_search"
-          || tool.name === "mirror_choice_get"
-          || tool.name === "mirror_choice_list";
-      }
-      return tool.name.startsWith("mirror_choice_") === (toolMode === "choice");
-    }) : [];
+    const tools = useTools ? toolsForMode(toolMode) : [];
 
     const messages = [
       {
@@ -297,4 +333,5 @@ async function askClaude(prompt, useTools = false, toolMode = "module") {
 module.exports = {
   askClaude,
   initializeMCPToolUse,
+  toolsForMode,
 };

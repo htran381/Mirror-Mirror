@@ -191,6 +191,10 @@ Module.register("MMM-Todo", {
       const step = task.position ? "Step " + task.position + " · " : "";
       const option = task.option_name && task.option_name !== "Do nothing" ? " · " + task.option_name : "";
       link.textContent = "↳ " + step + (task.choice_name || "Choice") + option;
+      if (task.choice_status === "dropped") {
+        link.classList.add("dropped");
+        link.textContent += " (dropped)";
+      }
       meta.appendChild(link);
     }
 

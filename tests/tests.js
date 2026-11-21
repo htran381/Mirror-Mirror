@@ -41,7 +41,8 @@ function makeRouter({
     local: [],
     claude: [],
     user: [],
-    assistant: []
+    assistant: [],
+    claudeOptions: []
   };
 
   const route = loadWithMocks('models/router.js', {
@@ -50,8 +51,9 @@ function makeRouter({
       return localResponse;
     },
     './claude': {
-      askClaude: async prompt => {
+      askClaude: async (prompt, ...options) => {
         calls.claude.push(prompt);
+        calls.claudeOptions.push(options);
         return claudeResponse;
       }
     },
@@ -391,9 +393,51 @@ test('TC17: a completed task leaves the list and Undo puts it back', () => {
   assert.equal(tasks.completeTask(taskId, null), 1);
   assert.equal(tasks.getTodoListWithLinks(userId).length, 0);
 
+  // Only open tasks can be finished or removed
+  assert.equal(tasks.completeTask(taskId, null), 0);
+  assert.equal(tasks.cancelTask(taskId), 0);
+
   assert.equal(tasks.reopenTask(taskId), 1);
   assert.deepEqual(tasks.getTodoListWithLinks(userId).map(t => t.title), ['Call the dentist']);
 
   // Reopening an already-open task changes nothing
   assert.equal(tasks.reopenTask(taskId), 0);
+});
+
+// Test To-Do routing and tool access
+test('TC18: to-do requests route to Claude with the to-do tools', async () => {
+  const { route, calls } = makeRouter({
+    local: true,
+    claude: true,
+    claudeResponse: 'TODO'
+  });
+
+  await route('add call the dentist to my to-do list');
+
+  assert.equal(calls.local.length, 0);
+  assert.equal(calls.claude.length, 2);
+  assert.deepEqual(calls.claudeOptions[1], [true, 'todo']);
+});
+
+test('TC19: each mode only gets its own tools', () => {
+  const { toolsForMode } = loadWithMocks('models/claude.js', {
+    '@anthropic-ai/sdk': class {},
+    '../mcp/mcpClient': { listMcpTools: async () => ({ tools: [] }), callMcpTool: async () => ({}) }
+  });
+
+  const tools = [
+    'mirror_module_show', 'mirror_choice_create', 'mirror_choice_search', 'mirror_choice_get',
+    'mirror_todo_add', 'mirror_todo_list', 'mirror_todo_complete', 'mirror_todo_remove'
+  ].map(name => ({ name }));
+  const names = mode => toolsForMode(mode, tools).map(tool => tool.name);
+
+  // To-do mode: to-do tools plus read-only choice lookup for linking, never choice writes
+  assert.deepEqual(names('todo'), [
+    'mirror_choice_search', 'mirror_choice_get',
+    'mirror_todo_add', 'mirror_todo_list', 'mirror_todo_complete', 'mirror_todo_remove'
+  ]);
+  // Choice Support is unchanged: choice tools only
+  assert.deepEqual(names('choice'), ['mirror_choice_create', 'mirror_choice_search', 'mirror_choice_get']);
+  // Module control never sees choice or to-do tools
+  assert.deepEqual(names('module'), ['mirror_module_show']);
 });

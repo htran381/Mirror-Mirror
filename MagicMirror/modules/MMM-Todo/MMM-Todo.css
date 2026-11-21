@@ -149,6 +149,11 @@
   color: var(--todo-accent);
 }
 
+/* The linked choice was dropped: keep the task, mute the link */
+.todo-choice.dropped {
+  color: var(--color-text-dimmed, #666);
+}
+
 .todo-undo {
   flex: none;
   padding: 8px 16px;

@@ -8,7 +8,8 @@ export async function loadPlugins(server: McpServer, context: PluginContext) {
     (await import("./plugins/notificationsPlugin.js")).default,
     (await import("./plugins/homeAssistantPlugin.js")).default,
     (await import("./plugins/systemPlugin.js")).default,
-    (await import("./plugins/choicePlugin.js")).default
+    (await import("./plugins/choicePlugin.js")).default,
+    (await import("./plugins/todoPlugin.js")).default
   ]
 
   for (const plugin of plugins) {
