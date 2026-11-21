@@ -3,6 +3,11 @@
  * Tweak the variables below to adjust size and layout.
  */
 .chat-wrapper {
+  /* Blue accent: your bubbles and the buttons. Change these to re-color. */
+  --chat-accent: #9cc3ff;
+  --chat-accent-fill: rgb(64 140 255 / 35%);
+  --chat-accent-border: rgb(64 140 255 / 60%);
+
   /* Portrait (default): tall, narrow screen */
   --chat-width: 900px;
   --chat-max-height: 48vh;
@@ -151,14 +156,14 @@
 .user-message {
   align-self: flex-end;
   text-align: right;
-  background: rgb(255 255 255 / 10%);
+  background: var(--chat-accent-fill);
   border-bottom-right-radius: 6px;
 }
 
 .assistant-message {
   align-self: flex-start;
   text-align: left;
-  border: 1px solid rgb(255 255 255 / 18%);
+  background: rgb(255 255 255 / 11%);
   border-bottom-left-radius: 6px;
 }
 
@@ -178,7 +183,11 @@
 }
 
 .user-message .chat-text {
-  color: var(--color-text, #999);
+  color: var(--color-text-bright, #fff);
+}
+
+.user-message .chat-role {
+  color: var(--chat-accent);
 }
 
 .assistant-message .chat-text {
@@ -218,10 +227,10 @@
   display: grid;
   place-items: center;
   padding: 0;
-  border: 2px solid rgb(255 255 255 / 30%);
+  border: 2px solid var(--chat-accent-border);
   border-radius: 50%;
   background: transparent;
-  color: var(--color-text, #999);
+  color: var(--chat-accent);
   cursor: none;
   transition: background 0.15s, color 0.15s;
 }
