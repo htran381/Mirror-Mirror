@@ -236,3 +236,83 @@ test('TC11: complex query routes to Claude when both models are available', asyn
   assert.equal(calls.claude.length, 2);
   assert.deepEqual(calls.assistant, ['CLAUDE']);
 });
+// Load node_helper with a fake listening loop so no microphone is needed
+function makeMicHelper() {
+  const listenCalls = [];
+
+  const helper = loadWithMocks('node_helper.js', {
+    node_helper: {
+      create: implementation => implementation
+    },
+    './speech/speechRecognition': h => {
+      listenCalls.push(h);
+      h.listening = true;
+    },
+    './controllers/commandController': handleCommand,
+    './models/router': async () => 'response',
+    './models/claude': {
+      initializeMCPToolUse: async () => {}
+    },
+    './mcp/mcpClient': {
+      connectMcp: async () => {}
+    },
+    './models/health': {
+      startHealthChecks: () => {}
+    }
+  });
+
+  const notifications = [];
+  helper.sendSocketNotification = (type, payload) => {
+    notifications.push([type, payload]);
+  };
+
+  helper.muted = false;
+  helper.micEnabled = false;
+  helper.listening = false;
+  helper.recorder = null;
+
+  return { helper, listenCalls, notifications };
+}
+
+// Test mute button behavior
+test('TC12: muting stops the current recording and reports MUTE_STATE', async () => {
+  const { helper, notifications } = makeMicHelper();
+
+  let killed = false;
+  helper.recorder = { kill: () => { killed = true; } };
+
+  await helper.socketNotificationReceived('SET_MUTE', true);
+
+  assert.equal(helper.muted, true);
+  assert.equal(killed, true);
+  assert.deepEqual(notifications, [['MUTE_STATE', true]]);
+});
+
+test('TC13: unmuting restarts listening only if the loop had stopped', async () => {
+  const { helper, listenCalls } = makeMicHelper();
+
+  helper.startListening();
+  assert.equal(listenCalls.length, 1);
+
+  // Loop paused while muted
+  helper.setMuted(true);
+  helper.listening = false;
+
+  helper.setMuted(false);
+  assert.equal(listenCalls.length, 2);
+
+  // Loop still running: unmuting must not start a second loop
+  helper.setMuted(true);
+  helper.setMuted(false);
+  assert.equal(listenCalls.length, 2);
+});
+
+test('TC14: unmuting before the mic was ever started does not start listening', async () => {
+  const { helper, listenCalls, notifications } = makeMicHelper();
+
+  helper.setMuted(true);
+  helper.setMuted(false);
+
+  assert.equal(listenCalls.length, 0);
+  assert.deepEqual(notifications, [['MUTE_STATE', true], ['MUTE_STATE', false]]);
+});

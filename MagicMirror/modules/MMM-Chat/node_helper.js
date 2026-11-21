@@ -20,6 +20,12 @@ module.exports = NodeHelper.create({
 
     this.mockRunning = false;
 
+    // Microphone state
+    this.muted = false;      // set from the mute button on the mirror
+    this.micEnabled = false; // true once the real listening loop has been started
+    this.listening = false;  // true while the listening loop is running
+    this.recorder = null;    // current SoX recording process
+
     try {
       await connectMcp();
       console.log("MCP connected successfully.");
@@ -35,9 +41,17 @@ module.exports = NodeHelper.create({
   },
 
   // Receives messages from the front-end module
-  async socketNotificationReceived(notification) {
+  async socketNotificationReceived(notification, payload) {
+
+    if (notification === "SET_MUTE") {
+      this.setMuted(Boolean(payload));
+      return;
+    }
 
     if (notification === "START") {
+
+      // Sync the mute button if the front end was reloaded
+      this.sendSocketNotification("MUTE_STATE", Boolean(this.muted));
 
       if (process.env.MOCK_MODE === "true") {
 
@@ -55,7 +69,7 @@ module.exports = NodeHelper.create({
       else {
 
         await initializeMCPToolUse(); // initialize mcp tool for Claude use 
-        listen(this);
+        this.startListening();
 
       }
 
@@ -96,7 +110,7 @@ module.exports = NodeHelper.create({
         process.env.MOCK_MODE = "false";
 
         try {
-          await listen(this);
+          this.startListening();
         } 
         catch (error) {
           console.error("Microphone unavailable:", error.message);
@@ -114,6 +128,38 @@ module.exports = NodeHelper.create({
 
     }
 
+  },
+
+  // Start the listening loop unless it is already running
+  startListening() {
+    this.micEnabled = true;
+
+    if (!this.listening) {
+      listen(this);
+    }
+  },
+
+  // Mute or unmute the microphone
+  setMuted(muted) {
+    this.muted = muted;
+
+    if (muted) {
+      // Stop any recording in progress right away
+      if (this.recorder) {
+        this.recorder.kill();
+      }
+      console.log("Microphone muted");
+    }
+    else {
+      console.log("Microphone unmuted");
+
+      // Resume the loop if it stopped while muted
+      if (this.micEnabled && !this.listening) {
+        listen(this);
+      }
+    }
+
+    this.sendSocketNotification("MUTE_STATE", muted);
   },
 
   isChoiceFollowUpOpen() {

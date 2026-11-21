@@ -33,6 +33,16 @@ function findWakeWord(normalized) {
 
 // Main function to record audio and process speech
 async function listen(helper) {
+
+  // Muted: stop the loop here. setMuted(false) in node_helper restarts it.
+  if (helper.muted) {
+    helper.listening = false;
+    console.log("Mic muted - listening paused");
+    return;
+  }
+
+  helper.listening = true;
+
   const audioFile = path.resolve(__dirname, "audio.wav");
 
   try {
@@ -51,10 +61,23 @@ async function listen(helper) {
         "trim", "0", "10" // Allow up to 10 seconds for one request.
       ]);
 
+      // Keep a handle so muting can stop the recording immediately
+      helper.recorder = rec;
+
       // After recording finishes
-      rec.on("close", resolve);
+      rec.on("close", () => {
+        helper.recorder = null;
+        resolve();
+      });
 
     });
+
+    // Muted mid-recording: throw the audio away
+    if (helper.muted) {
+      helper.listening = false;
+      console.log("Mic muted - recording discarded");
+      return;
+    }
 
     // Path to whisper executable
     const whisperPath = path.resolve(
@@ -86,6 +109,13 @@ async function listen(helper) {
 
     // When transcription is done
     whisper.on("close", async () => {
+
+      // Muted while transcribing: ignore what was heard
+      if (helper.muted) {
+        helper.listening = false;
+        console.log("Mic muted - transcription discarded");
+        return;
+      }
 
       let text = output.trim().toLowerCase();
 

@@ -90,7 +90,80 @@
   white-space: pre-line;
 }
 
+.chat-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.chat-controls-right {
+  display: flex;
+  gap: 12px;
+}
+
+/* Minimized: just the control bar, as a compact pill */
+.chat-wrapper.minimized {
+  width: min(520px, 100%);
+}
+
+.chat-wrapper.minimized .chat-controls {
+  padding: 6px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+}
+
+/* Buttons: large enough to hit on an IR touch frame */
+.chat-button {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-text, #999);
+  cursor: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.chat-button svg {
+  width: 28px;
+  height: 28px;
+}
+
+.chat-button:active {
+  background: rgb(255 255 255 / 20%);
+  color: var(--color-text-bright, #fff);
+}
+
+/* Muted mic button stands out so it's obvious the mirror can't hear */
+.chat-button.active {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.chat-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 13px;
+  background: #fff;
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 26px;
+  box-sizing: border-box;
+}
+
 .chat-status {
+  flex: 1;
   text-align: center;
   font-size: 22px;
   letter-spacing: 0.08em;
@@ -100,6 +173,10 @@
 .chat-status.thinking {
   color: var(--color-text, #999);
   animation: chat-pulse 1.4s ease-in-out infinite;
+}
+
+.chat-status.muted {
+  color: #ff6b6b;
 }
 
 @keyframes chat-pulse {
