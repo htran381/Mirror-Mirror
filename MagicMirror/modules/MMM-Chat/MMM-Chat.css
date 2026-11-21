@@ -31,110 +31,61 @@
   }
 }
 
-/* Compact layout: minimal, module-style chat for a corner region.
- * No bubbles: your words are dim and quoted, the mirror's reply is bright,
- * like the clock and weather text. Comes after the landscape block so it
- * wins in both orientations. */
+/* Compact layout: chat bubbles in a module-sized panel for a corner region.
+ * Comes after the landscape block so it wins in both orientations. */
 .chat-wrapper.compact {
-  --chat-width: 640px;
-  --chat-max-height: 520px;
-  --chat-text-size: 27px;
-  --chat-user-size: 21px;
-  --chat-button-size: 60px;
-  --chat-icon-size: 30px;
+  --chat-width: 760px;
+  --chat-max-height: 640px;
+  --chat-text-size: 32px;
+  --chat-role-size: 16px;
+  --chat-button-size: 76px;
+  --chat-icon-size: 36px;
 
   margin: 0;
-  gap: 12px;
+  gap: 14px;
 }
 
 @media (orientation: landscape) {
   .chat-wrapper.compact {
-    --chat-width: 700px;
-    --chat-max-height: 38vh;
-    --chat-text-size: 25px;
-    --chat-user-size: 20px;
+    --chat-width: 780px;
+    --chat-max-height: 44vh;
+    --chat-text-size: 29px;
+    --chat-role-size: 15px;
+    --chat-button-size: 68px;
+    --chat-icon-size: 32px;
   }
 }
 
-.chat-wrapper.compact .chat-scroll {
-  padding-top: 28px;
-  mask-image: linear-gradient(to bottom, transparent 0, #000 40px);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 40px);
-}
-
 .chat-wrapper.compact .chat-messages {
-  gap: 14px;
+  gap: 16px;
 }
 
 .chat-wrapper.compact .chat-message {
-  align-self: flex-start;
-  max-width: 100%;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: none;
-  text-align: left;
+  max-width: 88%;
+  padding: 12px 20px;
 }
 
-.chat-wrapper.compact .chat-role {
-  display: none;
-}
-
-.chat-wrapper.compact .user-message .chat-text {
-  font-size: var(--chat-user-size);
-  color: var(--color-text-dimmed, #666);
-}
-
-.chat-wrapper.compact .user-message .chat-text::before {
-  content: "\201C";
-}
-
-.chat-wrapper.compact .user-message .chat-text::after {
-  content: "\201D";
-}
-
-.chat-wrapper.compact .assistant-message .chat-text {
-  font-weight: 300;
-  line-height: 1.4;
-}
-
-/* Subtle controls: plain icons, left-aligned under the text */
 .chat-wrapper.compact .chat-controls {
   justify-content: flex-start;
-  gap: 8px;
+  gap: 14px;
 }
 
 .chat-wrapper.compact .chat-controls-right {
-  gap: 8px;
-}
-
-.chat-wrapper.compact .chat-button {
-  border: none;
-  color: var(--color-text-dimmed, #666);
-}
-
-.chat-wrapper.compact .chat-button.active {
-  color: #ff6b6b;
+  gap: 14px;
 }
 
 .chat-wrapper.compact .chat-status {
   flex: none;
-  min-width: 140px;
-  text-align: left;
-  font-size: 18px;
-}
-
-.chat-wrapper.compact .chat-badge {
-  min-width: 26px;
-  height: 26px;
-  line-height: 26px;
-  font-size: 15px;
-  top: 2px;
-  right: 2px;
+  min-width: 170px;
+  font-size: 22px;
 }
 
 .chat-wrapper.compact.minimized {
   width: auto;
+}
+
+.chat-wrapper.compact.minimized .chat-controls {
+  padding: 6px;
 }
 
 /* Scrollable history.
@@ -305,18 +256,13 @@
   50% { opacity: 0.4; }
 }
 
-.chat-wrapper.compact.minimized .chat-controls {
-  padding: 0;
-  border: none;
-}
-
 /* Keep the module header ("Mirror Chat") the same width as the chat */
 .module.MMM-Chat:has(.chat-wrapper.compact) {
-  max-width: 640px;
+  max-width: 760px;
 }
 
 @media (orientation: landscape) {
   .module.MMM-Chat:has(.chat-wrapper.compact) {
-    max-width: 700px;
+    max-width: 780px;
   }
 }
