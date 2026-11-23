@@ -129,9 +129,11 @@ async function chooseModel(command, conversation) {
     saved choice, option, evaluation, or decision and the user is not asking
     to change a record or work through a decision.
     Route questions about what the user previously picked or decided to HISTORY.
-    Choose TODO when the user wants to add, list, finish, or remove items on
-    their to-do list, such as "add call the dentist to my to-do list" or
-    "what's on my to-do list". A to-do request about a saved choice that does
+    Choose TODO when the user wants to add, list, edit, finish, or remove items
+    on their to-do list, such as "add call the dentist to my to-do list",
+    "make the lab report urgent", or "what's on my to-do list".
+    If the request includes "Selected to-do task" and asks to edit or change
+    it, or just says "edit", choose TODO. A to-do request about a saved choice that does
     not change the choice itself is still TODO.
     Moving, showing, or hiding the to-do list or the chat on the screen is
     MCP, not TODO, for example "move my to-do list to the top right".

@@ -170,7 +170,12 @@ ${choiceDisplayInstructions}
 
 const todoInstructions = `
 You manage the user's to-do list on their smart mirror.
-Add, list, finish, or remove tasks only when the user asks.
+Add, list, edit, finish, or remove tasks only when the user asks.
+To edit a task, change only what the user asked for: its title, priority,
+kind, or due date. To remove a due date, set it to null.
+If the request includes "Selected to-do task", the user tapped that task on
+the mirror: words like "this", "it", or "edit" refer to it, so use its ID.
+If the user only said "edit" without the new content, ask what it should say.
 Only the title is required. Keep titles short and in the user's words.
 Set priority only when the user says a task is urgent or important:
 urgent and important is urgent_important, urgent only is urgent.
@@ -186,7 +191,7 @@ The to-do list is shown on the mirror, so confirm briefly, for example
 `;
 
 // Which MCP tools each tool mode may use
-const TODO_TOOLS = ["mirror_todo_list", "mirror_todo_add", "mirror_todo_complete", "mirror_todo_remove"];
+const TODO_TOOLS = ["mirror_todo_list", "mirror_todo_add", "mirror_todo_edit", "mirror_todo_complete", "mirror_todo_remove"];
 
 function toolsForMode(toolMode, tools = claudeTools) {
   return tools.filter(tool => {

@@ -214,3 +214,19 @@
 .module.MMM-Todo .todo::-webkit-scrollbar {
   display: none;
 }
+
+/* Tapped task, ready for "Mirror, edit…" */
+.todo-task.selected {
+  margin: 0 -10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 12px;
+  background: rgb(64 140 255 / 16%);
+  box-shadow: inset 0 0 0 1px rgb(64 140 255 / 55%);
+}
+
+.todo-hint {
+  margin-top: 4px;
+  font-size: var(--todo-meta-size);
+  color: var(--todo-accent);
+}

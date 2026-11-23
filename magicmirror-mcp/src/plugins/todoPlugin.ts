@@ -85,6 +85,34 @@ const todoPlugin: MCPPlugin = {
       }
     )
 
+    // Edit an open task: rename it or change its priority, kind or due date.
+    server.tool(
+      "mirror.todo.edit",
+      "Edit an open task when the user asks: rename it, or change its priority, kind or due date. Pass only the fields to change. Set dueAt to null to remove the due date. List tasks first if the task ID is unknown.",
+      {
+        taskId: id(),
+        title: z.string().trim().min(1).max(200).optional(),
+        priority: z.enum(["urgent_important", "urgent", "other"]).optional(),
+        kind: z.enum(["exam", "assignment", "presentation", "meeting", "application", "other"]).optional(),
+        dueAt: z.string().regex(/^\d{4}-\d{2}-\d{2}( \d{2}:\d{2})?$/).nullable().optional()
+          .describe("New due date as YYYY-MM-DD or YYYY-MM-DD HH:MM, or null to remove it")
+      },
+      async ({ taskId, title, priority, kind, dueAt }) => {
+        try {
+          if ([title, priority, kind, dueAt].every(value => value === undefined)) {
+            return fail("Nothing to change was given.", taskId)
+          }
+          const { updateTask } = require(`${DB}/queries/tasks.js`)
+          const changed = updateTask(taskId, { title, priority, kind, dueAt })
+          return changed
+            ? ok({ taskId, updated: { title, priority, kind, dueAt } })
+            : fail("That task is not open.", taskId)
+        } catch (error) {
+          return fail("Could not edit the task.", error)
+        }
+      }
+    )
+
     // Mark a task done when the user says they finished it.
     server.tool(
       "mirror.todo.complete",

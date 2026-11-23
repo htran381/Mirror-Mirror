@@ -77,6 +77,28 @@ function cancelTask(taskId) {
 
 
 
+// Edits an open task. Pass only the fields to change: title, priority, kind,
+// dueAt (null clears the due date). Returns 1 if updated, 0 if not found or not open.
+function updateTask(taskId, changes) {
+    const columns = { title: "title", priority: "priority", kind: "kind", dueAt: "due_at" };
+    const fields = Object.keys(columns).filter(key => changes[key] !== undefined);
+
+    if (fields.length === 0) {
+        return 0;
+    }
+
+    const assignments = fields.map(key => `${columns[key]} = ?`).join(", ");
+    const values = fields.map(key => changes[key]);
+
+    const updated = db.prepare(
+        `
+        UPDATE tasks SET ${assignments}, updated_at = datetime('now','localtime')
+        WHERE task_id = ? AND status = 'open'
+        `
+    ).run(...values, taskId);
+    return updated.changes;
+}
+
 // Puts a done or cancelled task back on the list (used by Undo on the mirror). Returns 1 if updated, 0 if not.
 function reopenTask(taskId) {
     const changes = db.prepare(
@@ -115,4 +137,4 @@ function getTodoListWithLinks(userId) {
     ).all(userId);
 }
 
-module.exports = { addTask, getTodoList, completeTask, cancelTask, reopenTask, getTodoListWithLinks, };
+module.exports = { addTask, getTodoList, completeTask, cancelTask, reopenTask, getTodoListWithLinks, updateTask, };

@@ -44,6 +44,13 @@ module.exports = NodeHelper.create({
   // Receives messages from the front-end module
   async socketNotificationReceived(notification, payload) {
 
+    // MMM-Todo: the user tapped a task to select it (null when deselected)
+    if (notification === "SELECTED_TASK") {
+      this.selectedTask = payload || null;
+      console.log("Selected to-do task:", this.selectedTask ? this.selectedTask.title : "none");
+      return;
+    }
+
     if (notification === "SET_MUTE") {
       this.setMuted(Boolean(payload));
       return;
@@ -213,8 +220,15 @@ module.exports = NodeHelper.create({
     // Send conversation to router if not a command
     // Check the window when the request arrives.
     const wasInFollowUp = this.isChoiceFollowUpOpen();
-    const response = await route(command, model => {
-      const isChoiceRelated = model === "CHOICE" || model === "HISTORY";
+
+    // A task tapped on the mirror gives "edit" / "this" something to refer to
+    const routedCommand = this.selectedTask
+      ? `${command}\n(Selected to-do task: #${this.selectedTask.task_id} "${this.selectedTask.title}")`
+      : command;
+
+    const response = await route(routedCommand, model => {
+      // TODO keeps the window open too, so "edit" can be followed by the new content
+      const isChoiceRelated = model === "CHOICE" || model === "HISTORY" || model === "TODO";
       if (isChoiceRelated && (wokeMirror || wasInFollowUp)) {
         this.choiceFollowUpUntil = Date.now() + CHOICE_FOLLOW_UP_MS;
       }

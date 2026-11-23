@@ -45,12 +45,17 @@ Module.register("MMM-Chat", {
   },
 
   // Runs when MagicMirror finishes loading all modules
-  notificationReceived: function (notification) {
+  notificationReceived: function (notification, payload) {
 
     if (notification === "DOM_OBJECTS_CREATED") {
 
       console.log("MMM-Chat loaded");
 
+    }
+
+    // MMM-Todo tells us which task the user tapped, for "edit this"
+    if (notification === "TODO_SELECTED") {
+      this.sendSocketNotification("SELECTED_TASK", payload || null);
     }
 
   },

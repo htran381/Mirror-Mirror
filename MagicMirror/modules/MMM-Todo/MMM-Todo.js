@@ -9,6 +9,7 @@ Module.register("MMM-Todo", {
     maxItems: 7,              // tasks shown before "+N more"
     updateInterval: 60,       // seconds between refreshes from the database
     undoSeconds: 5,           // how long a completed task stays with an Undo button
+    selectSeconds: 60,        // how long a tapped task stays selected for "edit"
     showKind: true            // show "Assignment", "Exam", ... under the title
   },
 
@@ -31,6 +32,7 @@ Module.register("MMM-Todo", {
     this.loaded = false;
     this.error = null;
     this.justDone = new Map(); // task_id -> { task, index, timer } for Undo
+    this.selectedId = null;    // task tapped for editing ("tap an item and say EDIT")
 
     this.sendSocketNotification("GET_TASKS");
 
@@ -52,6 +54,16 @@ Module.register("MMM-Todo", {
       this.loaded = true;
       this.error = null;
       this.tasks = this.withJustDone(payload);
+
+      // Keep the selection in sync with the edited list
+      const selected = this.tasks.find(task => task.task_id === this.selectedId);
+      if (this.selectedId !== null && !selected) {
+        this.selectTask(null);
+      }
+      else if (selected) {
+        this.sendNotification("TODO_SELECTED", { task_id: selected.task_id, title: selected.title });
+      }
+
       this.updateDom(0);
     }
 
@@ -77,6 +89,10 @@ Module.register("MMM-Todo", {
   },
 
   completeTask: function (task) {
+    if (this.selectedId === task.task_id) {
+      this.selectTask(null);
+    }
+
     const index = this.tasks.findIndex(t => t.task_id === task.task_id);
 
     const timer = setTimeout(() => {
@@ -87,6 +103,20 @@ Module.register("MMM-Todo", {
 
     this.justDone.set(task.task_id, { task, index, timer });
     this.sendSocketNotification("COMPLETE_TASK", task.task_id);
+    this.updateDom(0);
+  },
+
+  // Tap a task to select it for editing; tap again (or wait) to deselect
+  selectTask: function (task) {
+    clearTimeout(this.selectTimer);
+    this.selectedId = task ? task.task_id : null;
+
+    this.sendNotification("TODO_SELECTED", task ? { task_id: task.task_id, title: task.title } : null);
+
+    if (task) {
+      this.selectTimer = setTimeout(() => this.selectTask(null), this.config.selectSeconds * 1000);
+    }
+
     this.updateDom(0);
   },
 
@@ -135,7 +165,9 @@ Module.register("MMM-Todo", {
     const mmOwned = task.owner === "mm";
 
     const row = document.createElement("div");
-    row.className = "todo-task" + (done ? " done" : "") + (mmOwned ? " mm-owned" : "");
+    const selected = !done && this.selectedId === task.task_id;
+    row.className = "todo-task" + (done ? " done" : "") + (mmOwned ? " mm-owned" : "") +
+      (selected ? " selected" : "");
 
     // Checkbox (user tasks only: MM marks its own tasks done when it delivers them)
     if (mmOwned) {
@@ -200,6 +232,21 @@ Module.register("MMM-Todo", {
 
     if (meta.childNodes.length > 0) {
       body.appendChild(meta);
+    }
+
+    // Tapping the text selects the task, so the user can say "Mirror, edit…"
+    if (!done) {
+      body.addEventListener("click", event => {
+        event.stopPropagation();
+        this.selectTask(selected ? null : task);
+      });
+    }
+
+    if (selected) {
+      const hint = document.createElement("div");
+      hint.className = "todo-hint";
+      hint.textContent = "Say \u201CMirror, edit\u201D and the change";
+      body.appendChild(hint);
     }
 
     row.appendChild(body);

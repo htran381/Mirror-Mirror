@@ -427,17 +427,79 @@ test('TC19: each mode only gets its own tools', () => {
 
   const tools = [
     'mirror_module_show', 'mirror_choice_create', 'mirror_choice_search', 'mirror_choice_get',
-    'mirror_todo_add', 'mirror_todo_list', 'mirror_todo_complete', 'mirror_todo_remove'
+    'mirror_todo_add', 'mirror_todo_list', 'mirror_todo_edit', 'mirror_todo_complete', 'mirror_todo_remove'
   ].map(name => ({ name }));
   const names = mode => toolsForMode(mode, tools).map(tool => tool.name);
 
   // To-do mode: to-do tools plus read-only choice lookup for linking, never choice writes
   assert.deepEqual(names('todo'), [
     'mirror_choice_search', 'mirror_choice_get',
-    'mirror_todo_add', 'mirror_todo_list', 'mirror_todo_complete', 'mirror_todo_remove'
+    'mirror_todo_add', 'mirror_todo_list', 'mirror_todo_edit', 'mirror_todo_complete', 'mirror_todo_remove'
   ]);
   // Choice Support is unchanged: choice tools only
   assert.deepEqual(names('choice'), ['mirror_choice_create', 'mirror_choice_search', 'mirror_choice_get']);
   // Module control never sees choice or to-do tools
   assert.deepEqual(names('module'), ['mirror_module_show']);
+});
+
+// Test editing tasks
+test('TC20: editing a task changes only the given fields, and only while open', () => {
+  const { tasks, db } = loadTaskQueries();
+  const userId = db.prepare('SELECT user_id FROM users LIMIT 1').get().user_id;
+
+  const taskId = tasks.addTask(userId, null, { title: 'Call dentist', dueAt: '2026-12-01' });
+
+  // Rename and raise priority; kind and due date stay the same
+  assert.equal(tasks.updateTask(taskId, { title: 'Call the dentist', priority: 'urgent' }), 1);
+  let task = db.prepare('SELECT * FROM tasks WHERE task_id = ?').get(taskId);
+  assert.equal(task.title, 'Call the dentist');
+  assert.equal(task.priority, 'urgent');
+  assert.equal(task.kind, 'other');
+  assert.equal(task.due_at, '2026-12-01');
+
+  // null clears the due date
+  assert.equal(tasks.updateTask(taskId, { dueAt: null }), 1);
+  task = db.prepare('SELECT * FROM tasks WHERE task_id = ?').get(taskId);
+  assert.equal(task.due_at, null);
+
+  // Nothing to change, or a finished task: no update
+  assert.equal(tasks.updateTask(taskId, {}), 0);
+  tasks.completeTask(taskId, null);
+  assert.equal(tasks.updateTask(taskId, { title: 'Too late' }), 0);
+});
+
+test('TC21: a task tapped on the mirror is passed along with the spoken request', async () => {
+  const routed = [];
+  const helper = loadWithMocks('node_helper.js', {
+    node_helper: { create: implementation => implementation },
+    './speech/speechRecognition': () => {},
+    './controllers/commandController': handleCommand,
+    './models/router': async (command, onRouteSelected) => {
+      routed.push(command);
+      onRouteSelected('TODO');
+      return 'Done';
+    },
+    './models/claude': { initializeMCPToolUse: async () => {} },
+    './mcp/mcpClient': { connectMcp: async () => {} },
+    './models/health': { startHealthChecks: () => {} }
+  });
+  helper.sendSocketNotification = () => {};
+  helper.choiceFollowUpUntil = 0;
+
+  const previousMode = process.env.MOCK_MODE;
+  process.env.MOCK_MODE = 'false';
+  try {
+    await helper.socketNotificationReceived('SELECTED_TASK', { task_id: 8, title: 'Call the dentist' });
+    await helper.handleSpeech('make this urgent', true);
+
+    await helper.socketNotificationReceived('SELECTED_TASK', null);
+    await helper.handleSpeech('what time is it', true);
+  } finally {
+    process.env.MOCK_MODE = previousMode;
+  }
+
+  assert.equal(routed[0], 'make this urgent\n(Selected to-do task: #8 "Call the dentist")');
+  assert.equal(routed[1], 'what time is it');
+  // "edit" can be followed by the new content without the wake word
+  assert.ok(helper.isChoiceFollowUpOpen());
 });
