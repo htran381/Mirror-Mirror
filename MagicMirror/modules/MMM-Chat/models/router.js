@@ -133,6 +133,8 @@ async function chooseModel(command, conversation) {
     their to-do list, such as "add call the dentist to my to-do list" or
     "what's on my to-do list". A to-do request about a saved choice that does
     not change the choice itself is still TODO.
+    Moving, showing, or hiding the to-do list or the chat on the screen is
+    MCP, not TODO, for example "move my to-do list to the top right".
     Use the recent conversation to resolve references and short confirmations.
     Classify only the current request. A past choice discussion alone does not
     make a new request a Choice Support request.
