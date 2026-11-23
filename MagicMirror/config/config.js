@@ -109,6 +109,10 @@ let config = {
 			},
 		},
 		{
+			// Keeps modules from overlapping when they are moved, shown or hidden
+			module: "MMM-Layout"
+		},
+		{
 			module: "MMM-Todo",
 			position: "top_left",
 			header: "To-Do"

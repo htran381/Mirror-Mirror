@@ -1,0 +1,19 @@
+/* MMM-Layout: default caps for every module in a left/right region.
+ * :where() keeps specificity low, so a module's own rule can refine this
+ * (e.g. max-width: min(480px, var(--region-max-width, 100vw))).
+ */
+:where(.region.left, .region.right) > .container > .module {
+  max-width: var(--region-max-width, none);
+}
+
+/* Long single-line text (e.g. headlines) wraps instead of running sideways */
+:where(.region.left, .region.right) > .container > .module .module-content {
+  overflow-wrap: break-word;
+}
+
+/* Bottom corners: never grow up into the module above in the same column.
+ * Modules that can scroll (MMM-Chat, MMM-Todo) do so; others are clipped. */
+:where(.region.bottom.left, .region.bottom.right) > .container > .module {
+  max-height: var(--region-max-height, none);
+  overflow: hidden;
+}

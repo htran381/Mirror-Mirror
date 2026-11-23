@@ -50,13 +50,6 @@
   gap: 10px;
 }
 
-/* Landscape: shorter history so the chat stays below the To-Do list */
-@media (orientation: landscape) {
-  .chat-wrapper.compact {
-    --chat-max-height: 230px;
-  }
-}
-
 .chat-wrapper.compact .chat-scroll {
   padding-top: 24px;
   mask-image: linear-gradient(to bottom, transparent 0, #000 32px);
@@ -128,7 +121,12 @@
  * re-render, so no scroll JS is needed. Swipe up (IR touch) to read history.
  */
 .chat-scroll {
-  max-height: var(--chat-max-height);
+  /* Never taller than the space MMM-Layout measured (minus header and
+   * controls), so the chat stays clear of the module above it */
+  max-height: max(
+    120px,
+    min(var(--chat-max-height), calc(var(--region-max-height, 100vh) - var(--chat-overhead, 150px)))
+  );
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
@@ -295,9 +293,10 @@
   50% { opacity: 0.4; }
 }
 
-/* Keep the module header ("Mirror Chat") the same width as the chat */
+/* Keep the module header ("Mirror Chat") the same width as the chat,
+ * narrowed to the space MMM-Layout measured for this region */
 .module.MMM-Chat:has(.chat-wrapper.compact) {
-  max-width: 560px;
+  max-width: min(560px, var(--region-max-width, 100vw));
 }
 
 /* ---- Listening / processing indicators ---- */
@@ -364,4 +363,13 @@
 @keyframes chat-typing {
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
   30% { opacity: 1; transform: translateY(-4px); }
+}
+
+/* When the chat is squeezed (e.g. moved beside the clock), keep the status
+ * on one line and let it shorten rather than break mid-word */
+.chat-status {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

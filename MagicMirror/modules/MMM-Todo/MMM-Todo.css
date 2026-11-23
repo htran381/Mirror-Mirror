@@ -9,10 +9,8 @@
   --todo-title-size: 22px;
   --todo-meta-size: 15px;
   --todo-check-size: 40px;
-  --todo-width: 380px; /* portrait: stays clear of the clock */
 
-  width: var(--todo-width);
-  max-width: 100%;
+  width: 100%;
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -175,10 +173,9 @@
   color: var(--todo-accent);
 }
 
-/* Landscape: wider but shorter rows, so the list fits above the chat */
+/* Landscape: shorter rows, since a landscape screen has less height */
 @media (orientation: landscape) {
   .todo {
-    --todo-width: 480px;
     --todo-title-size: 19px;
     --todo-meta-size: 13px;
     --todo-check-size: 32px;
@@ -196,14 +193,24 @@
   }
 }
 
-/* Keep the header line the same width as the list */
+/* Preferred width, narrowed to the space MMM-Layout measured for this region
+ * (beside the clock, for example). The header line follows the same width. */
 .module.MMM-Todo {
-  max-width: 380px;
+  --todo-width: 480px;
+
+  width: min(var(--todo-width), var(--region-max-width, 100vw));
   text-align: left;
 }
 
-@media (orientation: landscape) {
-  .module.MMM-Todo {
-    max-width: 480px;
-  }
+/* If the list is moved somewhere short (e.g. a bottom corner), it scrolls
+ * instead of overlapping the module above (height measured by MMM-Layout) */
+.module.MMM-Todo .todo {
+  max-height: calc(var(--region-max-height, 100vh) - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.module.MMM-Todo .todo::-webkit-scrollbar {
+  display: none;
 }
