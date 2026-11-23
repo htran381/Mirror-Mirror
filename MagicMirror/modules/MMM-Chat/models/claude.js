@@ -1,3 +1,15 @@
+/* Claude model
+ * Sends requests to Claude (Anthropic API) and lets it use the mirror's MCP
+ * tools. Each request runs in a "tool mode" that decides which tools and
+ * instructions Claude gets:
+ *
+ *  - module:  show/hide/move modules and other mirror controls
+ *  - choice:  Choice Support (create and work through choices)
+ *  - history: read-only lookup of past choices and decisions
+ *  - todo:    the to-do list (list/add/edit/complete/remove), plus read-only
+ *             choice lookup so a task can be linked to a choice
+ */
+
 const Anthropic = require("@anthropic-ai/sdk");
 const { listMcpTools, callMcpTool } = require("../mcp/mcpClient");
 

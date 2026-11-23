@@ -1,3 +1,10 @@
+/* Router
+ * Decides which model handles each request: the local model for quick
+ * questions, or Claude with a tool mode (MCP, CHOICE, HISTORY, TODO).
+ * The TODO label sends to-do list requests (add, list, edit, finish,
+ * remove) to Claude with the to-do tools.
+ */
+
 const askLocal = require("./local");
 const { askClaude } = require("./claude");
 

@@ -3,7 +3,11 @@ const { getTodoListWithLinks, completeTask, reopenTask } = require("../../db/que
 const { getActiveSession } = require("../../db/queries/sessions");
 const { getDefaultUser } = require("../../db/queries/users");
 
-// Reads the To-Do list from the database and handles taps from the mirror.
+// MMM-Todo (back end)
+// Reads the To-Do list from the database and handles taps from the mirror:
+//   GET_TASKS      -> sends the open tasks (TASKS)
+//   COMPLETE_TASK  -> checkbox tapped: mark the task done
+//   REOPEN_TASK    -> Undo tapped: put the task back on the list
 module.exports = NodeHelper.create({
 
   start() {

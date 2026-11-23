@@ -1,3 +1,11 @@
+/* Task queries (To-Do list)
+ * Read and change rows in the tasks table. Used by MMM-Todo (display, tap to
+ * complete, undo) and by the MCP to-do tools (chat requests).
+ *
+ * Changing a task (complete, cancel, edit) only works while it is open, so
+ * a finished or removed task can't be changed by mistake.
+ */
+
 const db = require("../index.js");
 
 // Creates an open task. Only `title` is required; kind, priority, owner and source have defaults. Returns the new task_id.

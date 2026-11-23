@@ -1,3 +1,16 @@
+/* To-Do MCP plugin
+ * Gives the AI tools to manage the user's to-do list from the chat:
+ *
+ *   mirror.todo.list      open tasks, priority first, with linked choices
+ *   mirror.todo.add       add a task (optionally linked to a saved choice)
+ *   mirror.todo.edit      rename a task or change its priority, kind, due date
+ *   mirror.todo.complete  mark a task done
+ *   mirror.todo.remove    remove a task (kept as cancelled)
+ *
+ * Uses the same database queries as the MMM-Todo module (db/queries/tasks.js).
+ * Kept separate from the Choice Support plugin: to-do tools never change choices.
+ */
+
 import { createRequire } from "node:module"
 import { z } from "zod"
 import type { MCPPlugin } from "./plugin.js"

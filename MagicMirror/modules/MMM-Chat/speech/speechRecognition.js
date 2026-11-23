@@ -1,3 +1,12 @@
+/* Speech recognition loop
+ * Records audio with SoX until the user stops talking, turns it into text
+ * with Whisper, and passes it on if it starts with the wake word "Mirror"
+ * (or a follow-up window is open). Then it starts listening again.
+ *
+ * It also reports "listening" / "processing" to the mirror, and stops
+ * recording right away when the mic is muted.
+ */
+
 const { spawn } = require("child_process");
 const path = require("path");
 

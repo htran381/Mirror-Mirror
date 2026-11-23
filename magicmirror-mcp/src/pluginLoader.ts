@@ -9,6 +9,7 @@ export async function loadPlugins(server: McpServer, context: PluginContext) {
     (await import("./plugins/homeAssistantPlugin.js")).default,
     (await import("./plugins/systemPlugin.js")).default,
     (await import("./plugins/choicePlugin.js")).default,
+    // To-do list tools (add, edit, complete, ...) for the chat
     (await import("./plugins/todoPlugin.js")).default
   ]
 

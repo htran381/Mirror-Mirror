@@ -1,6 +1,10 @@
-/* MMM-Chat
+/* MMM-Chat styles
  * Sized for reading on a mirror from a few feet away.
  * Tweak the variables below to adjust size and layout.
+ *
+ * Sections: sizes and colors, landscape, compact layout, message history,
+ * message bubbles, control bar and buttons, status (listening / thinking),
+ * typing bubble.
  */
 .chat-wrapper {
   /* Blue accent: your bubbles and the buttons. Change these to re-color. */
@@ -145,6 +149,8 @@
   display: none;
 }
 
+/* ---- Message bubbles: yours (blue, right) and the mirror's (gray, left) ---- */
+
 .chat-messages {
   display: flex;
   flex-direction: column;
@@ -199,6 +205,8 @@
   color: var(--color-text-bright, #fff);
   white-space: pre-line;
 }
+
+/* ---- Control bar: [mute]  status  [clear] [minimize] ---- */
 
 .chat-controls {
   display: flex;

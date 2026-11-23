@@ -1,3 +1,19 @@
+/* MMM-Chat (front end)
+ * The chat panel on the mirror: shows the conversation with the AI and the
+ * controls to use it by touch.
+ *
+ *  - Messages: your words and the mirror's replies as bubbles; the history
+ *    scrolls and stays pinned to the newest message
+ *  - Status: listening (sound bars), processing speech, thinking (typing
+ *    bubble), or muted, as reported by node_helper.js
+ *  - Buttons: mute the mic, clear the chat, minimize/expand the panel
+ *  - Minimizes itself after a minute idle and reopens when you talk to it
+ *  - Hides modules that would overlap it (hideWhileOpen) while it's open
+ *  - Tells MMM-Todo to reload after replies, and passes along a task the
+ *    user tapped so "edit this" knows which task is meant
+ *
+ * Talks to: node_helper.js (socket notifications), MMM-Todo (notifications)
+ */
 Module.register("MMM-Chat", {
 
   defaults: {

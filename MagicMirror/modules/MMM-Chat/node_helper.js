@@ -1,3 +1,16 @@
+/* MMM-Chat (back end)
+ * Runs in Node next to MagicMirror. Listens for speech, sends each request
+ * through the router to the right AI model, and sends the reply to the
+ * front end (MMM-Chat.js).
+ *
+ *  - Microphone: starts the listening loop, mute/unmute (SET_MUTE), and
+ *    reports "listening"/"processing" so the mirror can show it (MIC_STATE)
+ *  - Follow-up window: after a choice or to-do reply, the next sentence
+ *    doesn't need the wake word "Mirror"
+ *  - Selected task: remembers the To-Do task the user tapped and adds it to
+ *    the next request, so "edit this" / "make this urgent" can find it
+ *  - Mock mode (MOCK_MODE=true): plays sample commands instead of the mic
+ */
 
 const NodeHelper = require("node_helper");
 const listen = require("./speech/speechRecognition");
