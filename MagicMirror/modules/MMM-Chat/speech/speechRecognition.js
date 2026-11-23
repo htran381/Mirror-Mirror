@@ -91,7 +91,7 @@ async function listen(helper) {
       return;
     }
 
-    // Audio captured; Whisper is turning it into text
+    // Audio captured. Whisper is turning it into text
     helper.reportMicState("processing");
 
     // Path to whisper executable

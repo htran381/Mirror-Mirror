@@ -106,7 +106,7 @@ Module.register("MMM-Todo", {
     this.updateDom(0);
   },
 
-  // Tap a task to select it for editing; tap again (or wait) to deselect
+  // Tap a task to select it for editing. Tap again (or wait) to deselect
   selectTask: function (task) {
     clearTimeout(this.selectTimer);
     this.selectedId = task ? task.task_id : null;

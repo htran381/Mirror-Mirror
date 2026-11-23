@@ -449,7 +449,7 @@ test('TC20: editing a task changes only the given fields, and only while open', 
 
   const taskId = tasks.addTask(userId, null, { title: 'Call dentist', dueAt: '2026-12-01' });
 
-  // Rename and raise priority; kind and due date stay the same
+  // Rename and raise priority. Kind and due date stay the same
   assert.equal(tasks.updateTask(taskId, { title: 'Call the dentist', priority: 'urgent' }), 1);
   let task = db.prepare('SELECT * FROM tasks WHERE task_id = ?').get(taskId);
   assert.equal(task.title, 'Call the dentist');

@@ -2,7 +2,7 @@
  * The chat panel on the mirror: shows the conversation with the AI and the
  * controls to use it by touch.
  *
- *  - Messages: your words and the mirror's replies as bubbles; the history
+ *  - Messages: your words and the mirror's replies as bubbles. The history
  *    scrolls and stays pinned to the newest message
  *  - Status: listening (sound bars), processing speech, thinking (typing
  *    bubble), or muted, as reported by node_helper.js

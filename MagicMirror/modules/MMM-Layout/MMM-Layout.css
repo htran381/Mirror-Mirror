@@ -12,7 +12,7 @@
 }
 
 /* Bottom corners: never grow up into the module above in the same column.
- * Modules that can scroll (MMM-Chat, MMM-Todo) do so; others are clipped. */
+ * Modules that can scroll (MMM-Chat, MMM-Todo) do so. Others are clipped. */
 :where(.region.bottom.left, .region.bottom.right) > .container > .module {
   max-height: var(--region-max-height, none);
   overflow: hidden;
