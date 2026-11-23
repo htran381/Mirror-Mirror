@@ -39,12 +39,12 @@
 /* Compact layout: a small panel like the other modules.
  * Comes after the landscape block so it wins in both orientations. */
 .chat-wrapper.compact {
-  --chat-width: 460px;
-  --chat-max-height: 380px;
-  --chat-text-size: 20px;
-  --chat-role-size: 12px;
-  --chat-button-size: 56px;
-  --chat-icon-size: 26px;
+  --chat-width: 560px;
+  --chat-max-height: 460px;
+  --chat-text-size: 24px;
+  --chat-role-size: 14px;
+  --chat-button-size: 64px;
+  --chat-icon-size: 30px;
 
   margin: 0;
   gap: 10px;
@@ -53,7 +53,7 @@
 /* Landscape: shorter history so the chat stays below the To-Do list */
 @media (orientation: landscape) {
   .chat-wrapper.compact {
-    --chat-max-height: 260px;
+    --chat-max-height: 230px;
   }
 }
 
@@ -69,8 +69,8 @@
 
 .chat-wrapper.compact .chat-message {
   max-width: 92%;
-  padding: 9px 14px;
-  border-radius: 14px;
+  padding: 11px 17px;
+  border-radius: 16px;
 }
 
 .chat-wrapper.compact .chat-role {
@@ -82,7 +82,7 @@
 }
 
 .chat-wrapper.compact .chat-status {
-  font-size: 16px;
+  font-size: 19px;
 }
 
 .chat-wrapper.compact .chat-badge {
@@ -99,7 +99,7 @@
   --chat-icon-size: 36px;
 
   /* Fixed width so the bar doesn't shrink and crowd its buttons */
-  width: 460px;
+  width: 560px;
   max-width: 100%;
 }
 
@@ -297,7 +297,7 @@
 
 /* Keep the module header ("Mirror Chat") the same width as the chat */
 .module.MMM-Chat:has(.chat-wrapper.compact) {
-  max-width: 460px;
+  max-width: 560px;
 }
 
 /* ---- Listening / processing indicators ---- */
